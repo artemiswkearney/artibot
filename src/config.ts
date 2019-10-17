@@ -1,0 +1,48 @@
+import fs from 'fs';
+import util from 'util';
+import * as jsonfile from 'jsonfile';
+
+interface Config {
+	token : string;
+	groceries : {
+		itemsChannel : string;
+		historyChannel : string;
+		orderedChannel : string;
+		orderedEmote : string;
+		boughtEmote : string;
+		addToListEmote : string;
+		deleteEmote : string;
+	}
+	shutdownOnUpdate: {
+		updateChannel : string;
+	}
+	saveAndLoadECS: {
+		saveChannel : string;
+		path : fs.PathLike;
+	}
+	status: {
+		statusCommand : string;
+	}
+	atAtEveryone: {
+		role : string;
+	}
+	houseSearch: {
+		listingsChannel : string;
+		housesChannel : string;
+		contactedChannel : string;
+		actionNeededChannel : string;
+		rejectedChannel : string;
+		vettedReact : string;
+		contactedReact : string;
+		actionNeededReact : string;
+		actionTakenReact : string;
+		actionNotNeededReact : string;
+		rejectedReact : string;
+		actionNeededFromRole : string;
+	}
+}
+
+// const configJson = fs.readFileSync('../config.json', 'utf8') as string;
+// const config = JSON.parse(configJson) as Config;
+const config = jsonfile.readFileSync('../config.json', 'utf8') as Config;
+export default config;
