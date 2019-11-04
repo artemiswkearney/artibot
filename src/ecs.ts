@@ -4,6 +4,8 @@ import * as jsonfile from 'jsonfile';
 import fs from 'fs';
 import util from 'util';
 
+// NOTE: Unfinished; fix before using.
+
 // Since UUIDv5 requires a namespace to generate *any* UUID, and we want namespaces to have
 // consistent UUIDs, put namespaces themselves into a namespace
 const componentNamespaceNamespaceUUID = "5b948c15-3c91-4f12-8339-2c25f939822c";
@@ -125,11 +127,21 @@ function reviver(key : string, value : any) : any {
 }
 
 async function save(path : fs.PathLike) : Promise<void> {
-	await jsonfile.writeFile(path, Array.from(components), { replacer: replacer });
+	try {
+		await jsonfile.writeFile(path, Array.from(components), { replacer: replacer });
+	}
+	catch (e) {
+		console.log(e);
+	}
 }
 async function load(path : fs.PathLike) : Promise<void> {
-	if (fs.existsSync(path)) { 
-		components = new Map(await jsonfile.readFile(path, { reviver: reviver }));
+	try {
+		if (fs.existsSync(path)) { 
+			components = new Map(await jsonfile.readFile(path, { reviver: reviver }));
+	}
+	}
+	catch (e) {
+		console.log(e);
 	}
 }
 function saveSync(path : fs.PathLike) : void {

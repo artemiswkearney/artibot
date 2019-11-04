@@ -43,3 +43,5 @@ yarn.lock
 
 # ignore config
 config.json
+# ignore ECS state
+ecs.json

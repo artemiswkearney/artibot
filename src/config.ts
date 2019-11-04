@@ -40,6 +40,23 @@ interface Config {
 		rejectedReact : string;
 		actionNeededFromRole : string;
 	}
+	goals: {
+		mustEmote : string;
+		shouldEmote : string;
+		niceEmote : string;
+		doneEmote : string;
+		questionEmote : string;
+		answeredEmote : string;
+		dailyEmote : string;
+		weeklyEmote : string;
+		dailyChannel : string;
+		dailyDoneChannel : string;
+		dailyQuestionChannel : string;
+		weeklyChannel : string;
+		weeklyDoneChannel : string;
+		weeklyQuestionChannel : string;
+		proposedChannel : string;
+	}
 }
 
 // const configJson = fs.readFileSync('../config.json', 'utf8') as string;

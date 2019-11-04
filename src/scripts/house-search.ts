@@ -1,3 +1,4 @@
+/*
 import client from "../client";
 import config from "../config";
 import * as Discord from 'discord.js';
@@ -98,10 +99,16 @@ async function handleRejected(msg : Discord.Message, u : Discord.User) {
 async function handleContacted(msg : Discord.Message, u : Discord.User) {
 	console.log(`${findLinks(msg)[0]} contacted by ${msg.guild.member(u).displayName}`);
 	messageToEntity(msg).set(contactUser, u.id);
+	console.log("Moving to contacted channel...");
 	await moveMessage(msg, config.houseSearch.contactedChannel);
+	console.log("Moved");
 }
 async function handleNeedsAction(msg : Discord.Message, u : Discord.User) {
-	if (u.id !== messageToEntity(msg).get(contactUser)) return;
+	if (u.id !== messageToEntity(msg).get(contactUser)) {
+		console.log(`${u.id} !== ${messageToEntity(msg).get(contactUser)}`);
+		console.log(ECS.components);
+		return;
+	}
 	messageToEntity(msg).set(actionTakenBy, []);
 	await moveMessage(msg, config.houseSearch.actionNeededChannel);
 }
@@ -134,9 +141,15 @@ Reactor.addHandlers(config.houseSearch.housesChannel, [
 	[config.houseSearch.contactedReact, handleContacted],
 	[config.houseSearch.rejectedReact, handleRejected],
 ]);
+Reactor.addHandlers(config.houseSearch.contactedChannel, [
+	[config.houseSearch.vettedReact, handleReVetted],
+	[config.houseSearch.actionNeededReact, handleNeedsAction],
+	[config.houseSearch.rejectedReact, handleRejected],
+]);
 Reactor.addHandlers(config.houseSearch.actionNeededChannel, [
 	[config.houseSearch.vettedReact, handleReVetted],
 	[config.houseSearch.actionTakenReact, handleActionTaken],
 	[config.houseSearch.actionNotNeededReact, handleActionNotNeeded],
 	[config.houseSearch.rejectedReact, handleRejected],
 ]);
+*/
