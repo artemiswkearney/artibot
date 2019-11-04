@@ -4,6 +4,8 @@ A modular Discord bot for household automation, built with [Discord.js](https://
 The core of Artibot doesn't do much - it spins up a Discord client, starts a minimal webserver so Google Cloud AppEngine will know it started successfully, and... that's about it. The real functionality comes from loaded scripts (in the folder `src/scripts`), meaning new features naturally turn out modular, and can be removed or disabled without affecting the bot's other functionality and without needing to hunt through every file and remove references to the feature.
 
 The scripts in the repo currently are all the things I use the bot for - if they happen to be exactly what you need, then you can use them out of the box by setting up a `config.json` before starting/deploying the bot, but otherwise the code is there to be used as inspiration or as a template.
+
+The [grocery list system](https://github.com/artemiswkearney/artibot/blob/master/src/scripts/groceries.ts) is one you might be able to use out of the box, and also provides an example of how to use Reactor to build convenient UI.
 ## Reactor
 [Reactor](https://github.com/artemiswkearney/artibot/blob/master/src/reactor.ts) is a one-file library used for providing message reactions that function as buttons on every message (or every message matching a filter) in a specified channel. I built it because tapping/clicking a reaction seemed like a much less clunky interface than typing a command, and because I found that it was often useful to be able to do a specific list of things to one message at a time. It's been invaluable in building new features quickly.
 ## Hosting
