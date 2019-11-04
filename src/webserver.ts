@@ -1,5 +1,7 @@
 import express from 'express';
 
+// A minimal webserver to make AppEngine happy.
+
 const server = express();
 
 server.get(/.*/, (req, res) => {
