@@ -79,9 +79,18 @@ client.on("ready", async () => {
 
 	let dailyChannel = getChannel(config.goals.dailyChannel);
 	let weeklyChannel = getChannel(config.goals.weeklyChannel);
+	let longTermChannel = getChannel(config.goals.longTermChannel);
 
 	await Reactor.addHandlers(config.goals.proposedChannel, [
 		[config.goals.dailyEmote, (msg) => moveMessage(msg, dailyChannel)],
 		[config.goals.weeklyEmote, (msg) => moveMessage(msg, weeklyChannel)],
+		[config.goals.longTermEmote, (msg) => moveMessage(msg, longTermChannel)],
+	]);
+
+	await Reactor.addFilteredHandlers(config.goals.longTermChannel, [
+		[config.goals.mustEmote, filterUnprioritizedGoal, prioritizeHandler("!")],
+		[config.goals.shouldEmote, filterUnprioritizedGoal, prioritizeHandler("=")],
+		[config.goals.niceEmote, filterUnprioritizedGoal, prioritizeHandler("+")],
+		[config.goals.doneEmote, () => Promise.resolve(true), (msg) => moveMessage(msg, getChannel(config.goals.longTermDoneChannel))]
 	]);
 });

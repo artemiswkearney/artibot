@@ -49,6 +49,7 @@ interface Config {
 		answeredEmote : string;
 		dailyEmote : string;
 		weeklyEmote : string;
+		longTermEmote : string;
 		dailyChannel : string;
 		dailyDoneChannel : string;
 		dailyQuestionChannel : string;
@@ -56,6 +57,8 @@ interface Config {
 		weeklyDoneChannel : string;
 		weeklyQuestionChannel : string;
 		proposedChannel : string;
+		longTermChannel : string;
+		longTermDoneChannel : string;
 	}
 }
 
