@@ -18,8 +18,11 @@ interface Config {
 	}
 	saveAndLoadECS: {
 		saveChannel : string;
-		path : fs.PathLike;
+		path : string;
 	}
+	ecs: {
+		gcsBucket : string;
+	} | undefined;
 	status: {
 		statusCommand : string;
 	}

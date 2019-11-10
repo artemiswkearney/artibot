@@ -3,6 +3,11 @@ import uuid5 from 'uuid/v5';
 import * as jsonfile from 'jsonfile';
 import fs from 'fs';
 import util from 'util';
+import * as process from 'process';
+import { Storage } from '@google-cloud/storage';
+import * as GoogleCloudStorage from '@google-cloud/storage';
+import config from "./config";
+// import config from "./config";
 
 // NOTE: Unfinished; fix before using.
 
@@ -126,32 +131,79 @@ function reviver(key : string, value : any) : any {
 	return value;
 }
 
-async function save(path : fs.PathLike) : Promise<void> {
-	try {
-		await jsonfile.writeFile(path, Array.from(components), { replacer: replacer });
+// Detect whether we're running under AppEngine; if we are, use Google Cloud Storage instead of filesystem
+const isAppEngine = !!process.env.GAE_APPLICATION;
+let bucket : GoogleCloudStorage.Bucket;
+if (isAppEngine) {
+	bucket = new Storage().bucket(config.ecs!.gcsBucket);
+}
+
+
+async function save(path : string) : Promise<void> {
+	if (isAppEngine) {
+		try {
+			await bucket.file(path).save(JSON.stringify(Array.from(components), replacer), { resumable: false, contentType: "application/json" });
+			/*
+			await jsonfile.writeFile("/tmp/temp_ECS.json", Array.from(components), { replacer: replacer });
+			await bucket.upload("/tmp/temp_ECS.json", { destination: path });
+			await new Promise((resolve, reject) => {
+				fs.unlink("/tmp/temp_ECS.json", (e) => e ? reject(e) : resolve());
+			});
+			 */
+		}
+		catch (e) {
+			console.log(e);
+		}
+
 	}
-	catch (e) {
-		console.log(e);
+	else {
+		try {
+			await jsonfile.writeFile(path, Array.from(components), { replacer: replacer });
+		}
+		catch (e) {
+			console.log(e);
+		}
 	}
 }
-async function load(path : fs.PathLike) : Promise<void> {
-	try {
+async function load(path : string) : Promise<void> {
+	if (isAppEngine) {
+		try {
+			components = new Map(JSON.parse((await bucket.file(path).download())[0].toString(), reviver));
+		}
+		catch (e) {
+			console.log(e);
+		}
+		
+	}
+	else {
+		try {
+			if (fs.existsSync(path)) { 
+				components = new Map(await jsonfile.readFile(path, { reviver: reviver }));
+			}
+		}
+		catch (e) {
+			console.log(e);
+		}
+	}
+}
+/* removed; no way to save/load to cloud storage synchronously
+function saveSync(path : string) : void {
+	if (isAppEngine) {
+	}
+	else {
+		jsonfile.writeFileSync(path, Array.from(components), { replacer: replacer });
+	}
+}
+function loadSync(path : string) : void {
+	if (isAppEngine) {
+	}
+	else {
 		if (fs.existsSync(path)) { 
-			components = new Map(await jsonfile.readFile(path, { reviver: reviver }));
-	}
-	}
-	catch (e) {
-		console.log(e);
+			components = new Map(jsonfile.readFileSync(path, { reviver: reviver }));
+		}
 	}
 }
-function saveSync(path : fs.PathLike) : void {
-	jsonfile.writeFileSync(path, Array.from(components), { replacer: replacer });
-}
-function loadSync(path : fs.PathLike) : void {
-	if (fs.existsSync(path)) { 
-		components = new Map(jsonfile.readFileSync(path, { reviver: reviver }));
-	}
-}
+ */
 
 export {
 	componentNamespace,
@@ -161,6 +213,8 @@ export {
 	Entity,
 	save,
 	load,
+	/*
 	saveSync,
-	loadSync
+	loadSync,
+	 */
 }
