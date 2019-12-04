@@ -7,6 +7,20 @@ import * as Discord from 'discord.js';
 import * as Reactor from "../reactor";
 import { promisify } from 'util';
 
+declare module "../config" {
+	interface Config {
+		groceries : {
+			itemsChannel : string;
+			historyChannel : string;
+			orderedChannel : string;
+			orderedEmote : string;
+			boughtEmote : string;
+			addToListEmote : string;
+			deleteEmote : string;
+		}
+	}
+}
+
 // Called when an item is marked as bought from the current list channel.
 // Moves the item to history.
 async function handleBought(msg : Discord.Message) {

@@ -7,7 +7,14 @@ import * as process from 'process';
 import { Storage } from '@google-cloud/storage';
 import * as GoogleCloudStorage from '@google-cloud/storage';
 import config from "./config";
-// import config from "./config";
+
+declare module "./config" {
+	interface Config {
+		ecs: {
+			gcsBucket : string;
+		} | undefined;
+	}
+}
 
 // NOTE: Unfinished; fix before using.
 

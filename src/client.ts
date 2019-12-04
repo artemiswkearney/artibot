@@ -3,6 +3,12 @@ import fs from 'fs';
 import util from 'util';
 import config from './config';
 
+declare module "./config" {
+	interface Config {
+		token : string;
+	}
+}
+
 const client = new Discord.Client();
 
 client.on('error', console.error);

@@ -4,6 +4,18 @@ import * as Discord from 'discord.js';
 import exitHook from 'async-exit-hook';
 import * as ECS from "../ecs";
 
+declare module "../config" {
+	interface Config {
+		shutdownOnUpdate: {
+			updateChannel : string;
+		}
+		saveAndLoadECS: {
+			saveChannel : string;
+			path : string;
+		}
+	}
+}
+
 // A simple script to prevent multiple instances of the bot from running at the same time.
 // On startup, the bot sends a message containing a nonce in a designated channel.
 // Whenever a message is sent in that channel, the bot checks it against the nonce for this run. If it's different, that means the message was sent by a newer instance, so the bot shuts itself down.

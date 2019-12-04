@@ -5,6 +5,25 @@ import * as Discord from 'discord.js';
 import * as Reactor from "../reactor";
 import * as ECS from "../ecs";
 
+declare module "../config" {
+	interface Config {
+		houseSearch: {
+			listingsChannel : string;
+			housesChannel : string;
+			contactedChannel : string;
+			actionNeededChannel : string;
+			rejectedChannel : string;
+			vettedReact : string;
+			contactedReact : string;
+			actionNeededReact : string;
+			actionTakenReact : string;
+			actionNotNeededReact : string;
+			rejectedReact : string;
+			actionNeededFromRole : string;
+		}
+	}
+}
+
 ECS.componentNamespace("houseSearch");
 type MessageJSON = {
 	channel : string;

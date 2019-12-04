@@ -4,6 +4,31 @@ import * as Discord from 'discord.js';
 import * as Reactor from "../reactor";
 import { promisify } from 'util';
 
+declare module "../config" {
+	interface Config {
+		goals: {
+			mustEmote : string;
+			shouldEmote : string;
+			niceEmote : string;
+			doneEmote : string;
+			questionEmote : string;
+			answeredEmote : string;
+			dailyEmote : string;
+			weeklyEmote : string;
+			longTermEmote : string;
+			dailyChannel : string;
+			dailyDoneChannel : string;
+			dailyQuestionChannel : string;
+			weeklyChannel : string;
+			weeklyDoneChannel : string;
+			weeklyQuestionChannel : string;
+			proposedChannel : string;
+			longTermChannel : string;
+			longTermDoneChannel : string;
+		}
+	}
+}
+
 const prioritizedGoalRegex = /^[!=\+]/;
 const unprioritizedGoalRegex = /^(-*)(-)( .*)/;
 const unprioritizedGoalMatchRegex = /^-+ /;
