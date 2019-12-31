@@ -2,17 +2,19 @@ import client from "../client";
 import config from "../config";
 import * as Discord from 'discord.js';
 import exitHook from 'async-exit-hook';
-import * as ECS from "../ecs";
+// import * as ECS from "../ecs";
 
 declare module "../config" {
 	interface Config {
 		shutdownOnUpdate: {
 			updateChannel : string;
 		}
+			/*
 		saveAndLoadECS: {
 			saveChannel : string;
 			path : string;
 		}
+			 */
 	}
 }
 
@@ -22,9 +24,11 @@ declare module "../config" {
 // Also contains some code for saving and loading the state of the in-progress ECS module.
 
 const number = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
-let ecsSaved = false;
+//let ecsSaved = false;
 
+/*
 ECS.load(config.saveAndLoadECS.path).then(() => {
+ */
 	client.once('ready', async () => {
 		(client.channels.get(config.shutdownOnUpdate.updateChannel) as Discord.TextChannel)
 			.send(number.toString());
@@ -33,21 +37,26 @@ ECS.load(config.saveAndLoadECS.path).then(() => {
 	client.on('message', async msg => {
 		if (msg.channel.id === config.shutdownOnUpdate.updateChannel) {
 			if (number.toString() !== msg.content) {
+				/*
 				if (!ecsSaved) {
 					await ECS.save(config.saveAndLoadECS.path);
 					await (client.channels.get(config.saveAndLoadECS.saveChannel) as Discord.TextChannel)
 						.send("Saved ECS state");
 					ecsSaved = true;
 				}
+				 */
 				await client.destroy();
 				process.exit(0);
 			}
 		}
+			/*
 		if (msg.channel.id === config.saveAndLoadECS.saveChannel && !ecsSaved) {
 			await ECS.load(config.saveAndLoadECS.path);
 		}
+			 */
 	});
 
+/*
 	exitHook(callback => (async () => {
 		if (!ecsSaved) {
 			await ECS.save(config.saveAndLoadECS.path);
@@ -57,3 +66,4 @@ ECS.load(config.saveAndLoadECS.path).then(() => {
 		}
 	})().then(callback));
 });
+ */
