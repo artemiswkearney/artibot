@@ -39,7 +39,7 @@ client.on("ready", async () => {
 	await Reactor.addFilteredHandlers(config.recycle.channel, [
 		[config.homodyning.deleteEmote,
 			async msg => msg.createdTimestamp > config.homodyning.startTimestamp,
-			msg => moveMessage(msg, moveToChannel),
+			async msg => moveMessage(msg, moveToChannel),
 			false],
 	]);
 });
