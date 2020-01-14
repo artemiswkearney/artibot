@@ -23,37 +23,41 @@ declare module "../config" {
 
 const number = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
 let ecsSaved = false;
+let ecsLoaded = false;
 
 ECS.load(config.saveAndLoadECS.path).then(() => {
-	client.once('ready', async () => {
-		(client.channels.get(config.shutdownOnUpdate.updateChannel) as Discord.TextChannel)
-			.send(number.toString());
-	});
-
-	client.on('message', async msg => {
-		if (msg.channel.id === config.shutdownOnUpdate.updateChannel) {
-			if (number.toString() !== msg.content) {
-				if (!ecsSaved) {
-					await ECS.save(config.saveAndLoadECS.path);
-					await (client.channels.get(config.saveAndLoadECS.saveChannel) as Discord.TextChannel)
-						.send("Saved ECS state");
-					ecsSaved = true;
-				}
-				await client.destroy();
-				process.exit(0);
-			}
-		}
-		if (msg.channel.id === config.saveAndLoadECS.saveChannel && !ecsSaved) {
-			await ECS.load(config.saveAndLoadECS.path);
-		}
-	});
-
-	exitHook(callback => (async () => {
-		if (!ecsSaved) {
-			await ECS.save(config.saveAndLoadECS.path);
-			await (client.channels.get(config.saveAndLoadECS.saveChannel) as Discord.TextChannel)
-				.send("Saved ECS state (unexpected shutdown!)");
-			ecsSaved = true;
-		}
-	})().then(callback));
+	ecsLoaded = true;
 });
+
+client.once('ready', async () => {
+	(client.channels.get(config.shutdownOnUpdate.updateChannel) as Discord.TextChannel)
+		.send(number.toString());
+});
+
+client.on('message', async msg => {
+	if (msg.channel.id === config.shutdownOnUpdate.updateChannel) {
+		if (number.toString() !== msg.content) {
+			if (ecsLoaded && !ecsSaved) {
+				await ECS.save(config.saveAndLoadECS.path);
+				await (client.channels.get(config.saveAndLoadECS.saveChannel) as Discord.TextChannel)
+					.send("Saved ECS state");
+				ecsSaved = true;
+			}
+			await client.destroy();
+			process.exit(0);
+		}
+	}
+	if (msg.channel.id === config.saveAndLoadECS.saveChannel && !ecsSaved) {
+		await ECS.load(config.saveAndLoadECS.path);
+		ecsLoaded = true;
+	}
+});
+
+exitHook(callback => (async () => {
+	if (ecsLoaded && !ecsSaved) {
+		await ECS.save(config.saveAndLoadECS.path);
+		await (client.channels.get(config.saveAndLoadECS.saveChannel) as Discord.TextChannel)
+			.send("Saved ECS state (unexpected shutdown!)");
+		ecsSaved = true;
+	}
+})().then(callback));
