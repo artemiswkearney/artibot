@@ -1,9 +1,5 @@
-import client from "./client";
+import client from "./client.js";
 import * as Discord from 'discord.js';
-
-// Discord.js only provides reaction events for some messages by default. This means we won't always notice when one of our buttns is clicked, which is a problem.
-// Luckily, someone else already made a script that emits a normal reaction event for the messages that wouldn't otherwise get them, so we just import that.
-import "./uncached-reaction-events";
 
 export { addHandlers, addFilteredHandlers };
 
@@ -55,24 +51,24 @@ async function runHandlers(channel : ChannelID, handlers : FilteredHandler[]) : 
 // - Adds the appropriate reaction to every message that should have it and doesn't
 // - For any messages where the reaction has been clicked (or manually added by a user), calls the appropriate callback.
 async function sweepChannel(channel : ChannelID, emote : EmoteID, filter : Filter, callback : Callback) : Promise<void> {
-	let ch = client.channels.get(channel) as Discord.TextChannel;
-	if (!(ch instanceof Discord.TextChannel)) {
+	let ch = await client.channels.fetch(channel);
+	if (!(ch?.type === Discord.ChannelType.GuildText)) {
 		throw new Error(`Invalid channel ID: ${channel}`);
 	}
-	let messages = await ch.fetchMessages();
-	let e = client.emojis.get(emote) || emote;
+	let messages = await ch.awaitMessages();
+	let e = client.emojis.resolveId(emote) || emote;
 	try {
 	await Promise.all(messages.map(async msg => {
 			if (!await filter(msg)) return;
-			let react = msg.reactions.get(emote);
+			let react = msg.reactions.resolve(emote);
 			if (!(react && react.me)) {
 				await msg.react(e);
 			}
 			if (react) {
-				for (let [_, user] of (await react.fetchUsers()).filter(u => !u.bot)) {
+				for (let [_, user] of (await react.users.fetch()).filter(u => !u.bot)) {
 					await callback(msg, user);
 					if (!msg || msg.deleted) break;
-					await react.remove(user);
+					await react.users.remove(user);
 				}
 			}
 		}));
@@ -95,7 +91,8 @@ client.once('ready', async () => {
 });
 
 // When a new message is received, check if it should have any reactions (buttons), and add them.
-client.on('message', async msg => {
+client.on('messageCreate', async msg => {
+	if (msg.partial) return;
 	let handlers = handlersByChannel.get(msg.channel.id);
 	if (handlers) {
 		for (let h of handlers) {
@@ -107,16 +104,23 @@ client.on('message', async msg => {
 });
 
 // When a user adds a reaction, see if it's for a registered handler, and call its callback if it is.
-client.on('messageReactionAdd', async (reaction, user) => {
+client.on('messageReactionAdd', async (reaction_, user) => {
+	const reaction = reaction_.partial
+		? (await reaction_.fetch().catch(e => {
+			//TODO log here?
+			return undefined;
+		}))
+		: reaction_;
+	if (reaction === undefined) return;
 	if (user.bot) return;
 	let handlers = handlersByChannel.get(reaction.message.channel.id);
 	if (handlers) {
 		let handler = handlers.find(h => h[0] === reaction.emoji.toString() ||
 		                                 h[0] === reaction.emoji.id);
-		if (handler && await handler[1](reaction.message)) {
+		if (handler && await handler[1](reaction.message as Discord.Message<boolean>)) {
 			try {
-				await handler[2](reaction.message, user);
-				if (reaction && reaction.message && !reaction.message.deleted) await reaction.remove(user);
+				await handler[2](reaction.message as Discord.Message<boolean>, user as Discord.User);
+				if (reaction && reaction.message && !reaction.message.deleted) await reaction.users.remove(user as Discord.User);
 			}
 			catch (e) {
 				console.log("Exception caught in messageReactionAdd:");

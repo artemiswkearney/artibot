@@ -1,12 +1,14 @@
-import uuid4 from 'uuid/v4';
-import uuid5 from 'uuid/v5';
-import * as jsonfile from 'jsonfile';
+import {
+	v4 as uuid4,
+	v5 as uuid5,
+} from 'uuid';
+import jsonfile from 'jsonfile';
 import fs from 'fs';
 import util from 'util';
 import * as process from 'process';
 import { Storage } from '@google-cloud/storage';
 import * as GoogleCloudStorage from '@google-cloud/storage';
-import config from "./config";
+import config from "./config.js";
 
 declare module "./config" {
 	interface Config {
@@ -46,7 +48,7 @@ class Component<T> {
 		this.id = uuid5(name, namespaceUUID(componentNamespace));
 		this.values = new Map<string, T>();
 		if (components.has(this.id)) {
-			let c =  components.get(this.id)!;
+			let c = components.get(this.id)!;
 			if (replacer) c.replacer = replacer;
 			if (reviver) {
 				// if we didn't have a reviver but do now (e.g. if the component got

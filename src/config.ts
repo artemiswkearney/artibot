@@ -1,6 +1,6 @@
 import fs from 'fs';
 import util from 'util';
-import * as jsonfile from 'jsonfile';
+import jsonfile from 'jsonfile';
 
 // the interface is declared empty here, but extended by each script that uses the config
 /* use this to extend it in yours:

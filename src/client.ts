@@ -1,7 +1,7 @@
 import * as Discord from 'discord.js';
 import fs from 'fs';
 import util from 'util';
-import config from './config';
+import config from './config.js';
 
 declare module "./config" {
 	interface Config {
@@ -9,7 +9,23 @@ declare module "./config" {
 	}
 }
 
-const client = new Discord.Client();
+const client = new Discord.Client({
+	intents: [
+		Discord.IntentsBitField.Flags.Guilds,
+		Discord.IntentsBitField.Flags.GuildMessages,
+		Discord.IntentsBitField.Flags.GuildMembers,
+		Discord.IntentsBitField.Flags.MessageContent,
+		Discord.IntentsBitField.Flags.GuildMessageReactions,
+		Discord.IntentsBitField.Flags.DirectMessages,
+		Discord.IntentsBitField.Flags.DirectMessageReactions,
+		Discord.IntentsBitField.Flags.MessageContent,
+	],
+	partials: [
+		Discord.Partials.Message,
+		Discord.Partials.Channel,
+		Discord.Partials.Reaction,
+	],
+});
 
 client.on('error', console.error);
 

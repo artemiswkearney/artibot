@@ -1,10 +1,10 @@
 // A grocery list management system.
 // Maintains three channels: the current grocery list, a list of items on their way (for example, groceries ordered on AmazonFresh), and a list of previously bought items for easy re-purchasing.
 // Uses Reactor to provide buttons under each message.
-import client from "../client";
-import config from "../config";
+import client from "../client.js";
+import config from "../config.js";
 import * as Discord from 'discord.js';
-import * as Reactor from "../reactor";
+import * as Reactor from "../reactor.js";
 import { promisify } from 'util';
 
 declare module "../config" {
@@ -27,7 +27,7 @@ async function handleBought(msg : Discord.Message) {
 	console.log(`Bought: ${msg.content}`);
 	let content = msg.content;
 	await msg.delete();
-	(client.channels.get(config.groceries.historyChannel) as Discord.TextChannel)
+	(await client.channels.fetch(config.groceries.historyChannel) as Discord.TextChannel)
 		.send(content);
 }
 // Called when an item is marked as ordered from the current list channel.
@@ -36,7 +36,7 @@ async function handleOrdered(msg : Discord.Message) {
 	console.log(`Ordered: ${msg.content}`);
 	let content = msg.content;
 	await msg.delete();
-	(client.channels.get(config.groceries.orderedChannel) as Discord.TextChannel)
+	(await client.channels.fetch(config.groceries.orderedChannel) as Discord.TextChannel)
 		.send(content);
 }
 // Called when an item is marked as having arrived.
@@ -45,7 +45,7 @@ async function handleArrived(msg : Discord.Message) {
 	console.log(`Arrived: ${msg.content}`);
 	let content = msg.content;
 	await msg.delete();
-	(client.channels.get(config.groceries.historyChannel) as Discord.TextChannel)
+	(await client.channels.fetch(config.groceries.historyChannel) as Discord.TextChannel)
 		.send(content);
 }
 // Called when a user requests that an item in history be ordered again.
@@ -54,7 +54,7 @@ async function handleAddToList(msg : Discord.Message) {
 	console.log(`Adding to list: ${msg.content}`);
 	let content = msg.content;
 	await msg.delete();
-	(client.channels.get(config.groceries.itemsChannel) as Discord.TextChannel)
+	(await client.channels.fetch(config.groceries.itemsChannel) as Discord.TextChannel)
 		.send(content);
 }
 // Called when a user requests that an item in history be deleted, and does so.

@@ -1,8 +1,11 @@
-import client from "../client";
-import config from "../config";
+import client from "../client.js";
+import config from "../config.js";
 import * as Discord from 'discord.js';
-import exitHook from 'async-exit-hook';
-import * as ECS from "../ecs";
+import {
+	gracefulExit,
+	asyncExitHook,
+} from 'exit-hook';
+import * as ECS from "../ecs.js";
 
 declare module "../config" {
 	interface Config {
@@ -30,21 +33,22 @@ ECS.load(config.saveAndLoadECS.path).then(() => {
 });
 
 client.once('ready', async () => {
-	(client.channels.get(config.shutdownOnUpdate.updateChannel) as Discord.TextChannel)
+	(await client.channels.fetch(config.shutdownOnUpdate.updateChannel) as Discord.TextChannel)
 		.send(number.toString());
 });
 
-client.on('message', async msg => {
+client.on('messageCreate', async msg => {
+	if (msg.partial) return;
 	if (msg.channel.id === config.shutdownOnUpdate.updateChannel) {
 		if (number.toString() !== msg.content) {
 			if (ecsLoaded && !ecsSaved) {
 				await ECS.save(config.saveAndLoadECS.path);
-				await (client.channels.get(config.saveAndLoadECS.saveChannel) as Discord.TextChannel)
+				await (await client.channels.fetch(config.saveAndLoadECS.saveChannel) as Discord.TextChannel)
 					.send("Saved ECS state");
 				ecsSaved = true;
 			}
 			await client.destroy();
-			process.exit(0);
+			gracefulExit(0);
 		}
 	}
 	if (msg.channel.id === config.saveAndLoadECS.saveChannel && !ecsSaved) {
@@ -53,11 +57,13 @@ client.on('message', async msg => {
 	}
 });
 
-exitHook(callback => (async () => {
+asyncExitHook(async () => {
 	if (ecsLoaded && !ecsSaved) {
 		await ECS.save(config.saveAndLoadECS.path);
-		await (client.channels.get(config.saveAndLoadECS.saveChannel) as Discord.TextChannel)
+		await (await client.channels.fetch(config.saveAndLoadECS.saveChannel) as Discord.TextChannel)
 			.send("Saved ECS state (unexpected shutdown!)");
 		ecsSaved = true;
 	}
-})().then(callback));
+}, {
+	wait: 1000,
+});

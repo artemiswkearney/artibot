@@ -1,8 +1,13 @@
-runtime: nodejs10
-instance_class: B1
-manual_scaling:
-    instances: 1
+runtime: nodejs16
+instance_class: F1
+automatic_scaling:
+    max_instances: 1
+    min_instances: 1
+    max_idle_instances: 1
+    min_idle_instances: 1
 health_check:
     enable_health_check: False
 env_variables:
     GCLOUD_STORAGE_BUCKET: artibot_files
+inbound_services:
+- warmup

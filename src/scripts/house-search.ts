@@ -1,9 +1,9 @@
 /*
-import client from "../client";
-import config from "../config";
+import client from "../client.js";
+import config from "../config.js";
 import * as Discord from 'discord.js';
-import * as Reactor from "../reactor";
-import * as ECS from "../ecs";
+import * as Reactor from "../reactor.js";
+import * as ECS from "../ecs.js";
 
 declare module "../config" {
 	interface Config {

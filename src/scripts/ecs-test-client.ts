@@ -1,9 +1,9 @@
-import * as ECS from '../ecs';
-import client from "../client";
-import config from "../config";
+import * as ECS from '../ecs.js';
+import client from "../client.js";
+import config from "../config.js";
 import * as Discord from 'discord.js';
-import { match } from '../matchstick';
-// import * as Reactor from "../reactor";
+import { match } from '../matchstick.js';
+// import * as Reactor from "../reactor.js";
 
 declare module "../config" {
 	interface Config {
@@ -13,14 +13,15 @@ declare module "../config" {
 	}
 }
 
-client.on('message', msg => {
+client.on('messageCreate', msg => {
+	if (msg.partial) return;
 	if (msg.channel.id !== config.ecsTestClient.channel) return;
 	console.log(msg.content);
 	match(
 		[/^get ([^ ]+) ([^ ]+)/, (_, es, cs) => {
 			let e = new ECS.Entity(es);
 			let c = new ECS.Component(cs);
-			msg.channel.send(e.get(c) || "null");
+			msg.channel.send(`${e.get(c)}` || "null");
 		}],
 		[/^set ([^ ]+) ([^ ]+) (.*)/, (_, es, cs, value) => {
 			let e = new ECS.Entity(es);
@@ -59,4 +60,4 @@ client.on('message', msg => {
 			msg.channel.send("Component deleted.");
 		}],
 	)(msg.content);
-});
+})

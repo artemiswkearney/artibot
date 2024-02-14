@@ -1,7 +1,7 @@
-import client from "../client";
-import config from "../config";
+import client from "../client.js";
+import config from "../config.js";
 import * as Discord from 'discord.js';
-import * as Reactor from "../reactor";
+import * as Reactor from "../reactor.js";
 import { promisify } from 'util';
 
 declare module "../config" {
@@ -54,8 +54,8 @@ function prioritizeHandler(priority : string) : (msg : Discord.Message) => Promi
 	}
 }
 
-function getChannel(channel : string) : Discord.TextChannel {
-	let c = (client.channels.get(channel) as Discord.TextChannel);
+async function getChannel(channel : string) : Promise<Discord.TextChannel> {
+	let c = ((await client.channels.fetch(channel)) as Discord.TextChannel);
 	if (!c) console.log("Couldn't find channel " + channel);
 	return c;
 }
@@ -69,28 +69,28 @@ async function moveMessage(msg : Discord.Message, channel : Discord.TextChannel)
 }
 
 async function addQuestionHandlers(mainChannel : string, questionChannel : string) {
-	let mc = getChannel(mainChannel);
-	let qc = getChannel(questionChannel);
+	let mc = await getChannel(mainChannel);
+	let qc = await getChannel(questionChannel);
 	await Reactor.addFilteredHandlers(mainChannel, [[config.goals.questionEmote, filterPrioritizedGoal, (msg) => moveMessage(msg, qc)]]);
 	await Reactor.addFilteredHandlers(questionChannel, [[config.goals.answeredEmote, filterPrioritizedGoal, (msg) => moveMessage(msg, mc)]]);
 }
 
 client.on("ready", async () => {
-	let dailyDoneChannel = getChannel(config.goals.dailyDoneChannel);
-	let weeklyDoneChannel = getChannel(config.goals.weeklyDoneChannel);
+	let dailyDoneChannel = await getChannel(config.goals.dailyDoneChannel);
+	let weeklyDoneChannel = await getChannel(config.goals.weeklyDoneChannel);
 
 	await Reactor.addFilteredHandlers(config.goals.dailyChannel, [
 		[config.goals.mustEmote, filterUnprioritizedGoal, prioritizeHandler("!")],
 		[config.goals.shouldEmote, filterUnprioritizedGoal, prioritizeHandler("=")],
 		[config.goals.niceEmote, filterUnprioritizedGoal, prioritizeHandler("+")],
-		[config.goals.doneEmote, filterPrioritizedGoal, (msg) => moveMessage(msg, getChannel(config.goals.dailyDoneChannel))]
+		[config.goals.doneEmote, filterPrioritizedGoal, (msg) => moveMessage(msg, dailyDoneChannel)]
 	]);
 
 	await Reactor.addFilteredHandlers(config.goals.weeklyChannel, [
 		[config.goals.mustEmote, filterUnprioritizedGoal, prioritizeHandler("!")],
 		[config.goals.shouldEmote, filterUnprioritizedGoal, prioritizeHandler("=")],
 		[config.goals.niceEmote, filterUnprioritizedGoal, prioritizeHandler("+")],
-		[config.goals.doneEmote, filterPrioritizedGoal, (msg) => moveMessage(msg, getChannel(config.goals.weeklyDoneChannel))]
+		[config.goals.doneEmote, filterPrioritizedGoal, (msg) => moveMessage(msg, weeklyDoneChannel)]
 	]);
 
 	await addQuestionHandlers(config.goals.dailyChannel, config.goals.dailyQuestionChannel);
@@ -102,9 +102,9 @@ client.on("ready", async () => {
 		[config.goals.niceEmote, filterUnprioritizedGoal, prioritizeHandler("+")]
 	]);
 
-	let dailyChannel = getChannel(config.goals.dailyChannel);
-	let weeklyChannel = getChannel(config.goals.weeklyChannel);
-	let longTermChannel = getChannel(config.goals.longTermChannel);
+	let dailyChannel = await getChannel(config.goals.dailyChannel);
+	let weeklyChannel = await getChannel(config.goals.weeklyChannel);
+	let longTermChannel = await getChannel(config.goals.longTermChannel);
 
 	await Reactor.addHandlers(config.goals.proposedChannel, [
 		[config.goals.dailyEmote, (msg) => moveMessage(msg, dailyChannel)],
@@ -112,10 +112,12 @@ client.on("ready", async () => {
 		[config.goals.longTermEmote, (msg) => moveMessage(msg, longTermChannel)],
 	]);
 
+	let longTermDoneChannel = await getChannel(config.goals.longTermDoneChannel);
+
 	await Reactor.addFilteredHandlers(config.goals.longTermChannel, [
 		[config.goals.mustEmote, filterUnprioritizedGoal, prioritizeHandler("!")],
 		[config.goals.shouldEmote, filterUnprioritizedGoal, prioritizeHandler("=")],
 		[config.goals.niceEmote, filterUnprioritizedGoal, prioritizeHandler("+")],
-		[config.goals.doneEmote, () => Promise.resolve(true), (msg) => moveMessage(msg, getChannel(config.goals.longTermDoneChannel))]
+		[config.goals.doneEmote, () => Promise.resolve(true), (msg) => moveMessage(msg, longTermDoneChannel)]
 	]);
 });
